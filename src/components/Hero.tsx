@@ -27,15 +27,13 @@ const SCROLL_PAGES = SCROLL_COPY.length + 1;
 export default function Hero() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const activeIndexRef = useRef(-1);
-  const heroOpacityRef = useRef(1);
-  const [activeIndex, setActiveIndex] = useState(-1);
-  const [heroOpacity, setHeroOpacity] = useState(1);
   const [isMobile, setIsMobile] = useState(false);
-  const rafRef = useRef<number>(0);
   const currentTimeRef = useRef(0);
   const targetTimeRef = useRef(0);
-  const interpolatingRef = useRef(false);
+  const animFrameRef = useRef<number>(0);
 
   // Detect mobile once on mount (client-side only)
   useEffect(() => {
@@ -45,77 +43,65 @@ export default function Hero() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Smooth interpolation loop for desktop scroll-driven video
-  const interpolate = useCallback(() => {
+  // Single RAF loop: interpolates video time + updates DOM directly (no React re-renders)
+  const tick = useCallback(() => {
+    animFrameRef.current = requestAnimationFrame(tick);
+
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const rect = section.getBoundingClientRect();
+    const totalScroll = section.offsetHeight - window.innerHeight;
+    const scrolled = -rect.top;
+    const progress = Math.max(0, Math.min(1, scrolled / totalScroll));
+
+    // Hero opacity — direct DOM write, no setState
+    const heroFadeEnd = window.innerHeight * 0.6;
+    const heroOpacity = scrolled <= 0 ? 1 : Math.max(0, 1 - scrolled / heroFadeEnd);
+    const heroEl = heroRef.current;
+    if (heroEl) {
+      heroEl.style.opacity = String(heroOpacity);
+      heroEl.style.pointerEvents = heroOpacity < 0.1 ? "none" : "auto";
+    }
+
+    // Desktop: smooth video seeking with lerp
     const video = videoRef.current;
-    if (!video || !video.duration) {
-      interpolatingRef.current = false;
-      return;
+    if (video && video.duration && window.innerWidth >= 768) {
+      targetTimeRef.current = progress * video.duration;
+      const diff = targetTimeRef.current - currentTimeRef.current;
+      // Lerp factor 0.08 for buttery smoothness; skip tiny seeks
+      if (Math.abs(diff) > 0.01) {
+        currentTimeRef.current += diff * 0.08;
+        video.currentTime = currentTimeRef.current;
+      }
     }
 
-    const diff = targetTimeRef.current - currentTimeRef.current;
-
-    if (Math.abs(diff) < 0.015) {
-      currentTimeRef.current = targetTimeRef.current;
-      video.currentTime = currentTimeRef.current;
-      interpolatingRef.current = false;
-      return;
+    // Copy card index — direct DOM write
+    const copyStart = 0.2;
+    const copyEnd = 0.92;
+    let newIdx = -1;
+    if (progress >= copyStart && progress <= copyEnd) {
+      const copyProgress = (progress - copyStart) / (copyEnd - copyStart);
+      newIdx = Math.min(
+        SCROLL_COPY.length - 1,
+        Math.floor(copyProgress * SCROLL_COPY.length)
+      );
     }
-
-    currentTimeRef.current += diff * 0.15;
-    video.currentTime = currentTimeRef.current;
-
-    requestAnimationFrame(interpolate);
+    if (activeIndexRef.current !== newIdx) {
+      // Hide previous card
+      const prev = activeIndexRef.current;
+      if (prev >= 0 && cardRefs.current[prev]) {
+        cardRefs.current[prev]!.style.opacity = "0";
+        cardRefs.current[prev]!.style.transform = "translateY(24px) scale(0.97)";
+      }
+      // Show new card
+      if (newIdx >= 0 && cardRefs.current[newIdx]) {
+        cardRefs.current[newIdx]!.style.opacity = "1";
+        cardRefs.current[newIdx]!.style.transform = "translateY(0) scale(1)";
+      }
+      activeIndexRef.current = newIdx;
+    }
   }, []);
-
-  const onScroll = useCallback(() => {
-    if (rafRef.current) return;
-
-    rafRef.current = requestAnimationFrame(() => {
-      rafRef.current = 0;
-      const section = sectionRef.current;
-      const video = videoRef.current;
-      if (!section) return;
-
-      const rect = section.getBoundingClientRect();
-      const totalScroll = section.offsetHeight - window.innerHeight;
-      const scrolled = -rect.top;
-      const progress = Math.max(0, Math.min(1, scrolled / totalScroll));
-
-      // Hero fade
-      const heroFadeEnd = window.innerHeight * 0.6;
-      const newHeroOpacity = scrolled <= 0 ? 1 : Math.max(0, 1 - scrolled / heroFadeEnd);
-      if (Math.abs(heroOpacityRef.current - newHeroOpacity) > 0.01) {
-        heroOpacityRef.current = newHeroOpacity;
-        setHeroOpacity(newHeroOpacity);
-      }
-
-      // Desktop only: scroll-driven video seeking
-      if (video && video.duration && window.innerWidth >= 768) {
-        targetTimeRef.current = progress * video.duration;
-        if (!interpolatingRef.current) {
-          interpolatingRef.current = true;
-          requestAnimationFrame(interpolate);
-        }
-      }
-
-      // Copy index
-      const copyStart = 0.2;
-      const copyEnd = 0.92;
-      let newIdx = -1;
-      if (progress >= copyStart && progress <= copyEnd) {
-        const copyProgress = (progress - copyStart) / (copyEnd - copyStart);
-        newIdx = Math.min(
-          SCROLL_COPY.length - 1,
-          Math.floor(copyProgress * SCROLL_COPY.length)
-        );
-      }
-      if (activeIndexRef.current !== newIdx) {
-        activeIndexRef.current = newIdx;
-        setActiveIndex(newIdx);
-      }
-    });
-  }, [interpolate]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -129,14 +115,13 @@ export default function Hero() {
     }
   }, [isMobile]);
 
+  // Start/stop the single animation loop
   useEffect(() => {
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
+    animFrameRef.current = requestAnimationFrame(tick);
     return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [onScroll]);
+  }, [tick]);
 
   return (
     <section
@@ -205,11 +190,9 @@ export default function Hero() {
 
         {/* ── HERO COPY ── */}
         <div
+          ref={heroRef}
           className="absolute inset-0 z-10 flex items-center justify-center will-change-[opacity]"
-          style={{
-            opacity: heroOpacity,
-            pointerEvents: heroOpacity < 0.1 ? "none" : "auto",
-          }}
+          style={{ opacity: 1 }}
         >
           <div className="max-w-[900px] mx-auto px-6 md:px-10 text-center pt-0 md:pt-12">
             <motion.div
@@ -274,10 +257,11 @@ export default function Hero() {
           {SCROLL_COPY.map((item, i) => (
             <div
               key={i}
+              ref={(el) => { cardRefs.current[i] = el; }}
               className="absolute flex items-center justify-center will-change-transform"
               style={{
-                opacity: activeIndex === i ? 1 : 0,
-                transform: `translateY(${activeIndex === i ? 0 : 24}px) scale(${activeIndex === i ? 1 : 0.97})`,
+                opacity: 0,
+                transform: "translateY(24px) scale(0.97)",
                 transition: "opacity 0.5s ease-out, transform 0.5s ease-out",
               }}
             >
