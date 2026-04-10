@@ -165,14 +165,14 @@ export default function Hero() {
             on iOS Safari / mobile Chrome, so we just let it play.
             Cropped window centered vertically with art-directed focus. */}
         {isMobile && (
-          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[55vh] overflow-hidden rounded-3xl mx-0">
+          <div className="absolute inset-x-0 top-[42%] -translate-y-1/2 h-[38vh] overflow-hidden rounded-3xl mx-0">
             <video
               autoPlay
               loop
               muted
               playsInline
               preload="auto"
-              className="absolute inset-0 w-full h-full object-cover object-[center_48%]"
+              className="absolute inset-0 w-full h-full object-contain object-center"
               {...{ "webkit-playsinline": "true" } as React.HTMLAttributes<HTMLVideoElement>}
             >
               <source src="/Vizus Header 480p.mp4" type="video/mp4" />
@@ -270,7 +270,7 @@ export default function Hero() {
         </div>
 
         {/* ── SCROLL COPY CARDS ── */}
-        <div className="absolute inset-0 z-10 flex items-end md:items-center justify-center pointer-events-none px-4 md:px-6 pb-[12vh] md:pb-0">
+        <div className="absolute inset-0 z-10 flex items-end md:items-center justify-center pointer-events-none px-4 md:px-6 pb-[18vh] md:pb-0">
           {SCROLL_COPY.map((item, i) => (
             <div
               key={i}
