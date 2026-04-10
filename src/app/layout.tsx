@@ -17,7 +17,10 @@ export const metadata: Metadata = {
   description:
     "Vizus designs and deploys custom AI infrastructure, intelligent systems, and scalable platforms for companies that want to move faster and increase revenue.",
   icons: {
-    icon: "/vizus-icon.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/vizus-icon.png", type: "image/png" },
+    ],
     apple: "/vizus-icon.png",
   },
 };
