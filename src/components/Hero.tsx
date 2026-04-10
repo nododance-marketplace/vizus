@@ -31,12 +31,21 @@ export default function Hero() {
   const heroOpacityRef = useRef(1);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [heroOpacity, setHeroOpacity] = useState(1);
+  const [isMobile, setIsMobile] = useState(false);
   const rafRef = useRef<number>(0);
   const currentTimeRef = useRef(0);
   const targetTimeRef = useRef(0);
   const interpolatingRef = useRef(false);
 
-  // Smooth interpolation loop — lerps video.currentTime toward target
+  // Detect mobile once on mount (client-side only)
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Smooth interpolation loop for desktop scroll-driven video
   const interpolate = useCallback(() => {
     const video = videoRef.current;
     if (!video || !video.duration) {
@@ -46,7 +55,6 @@ export default function Hero() {
 
     const diff = targetTimeRef.current - currentTimeRef.current;
 
-    // If close enough, snap and stop
     if (Math.abs(diff) < 0.015) {
       currentTimeRef.current = targetTimeRef.current;
       video.currentTime = currentTimeRef.current;
@@ -54,7 +62,6 @@ export default function Hero() {
       return;
     }
 
-    // Lerp — ease toward target (higher = snappier, lower = smoother)
     currentTimeRef.current += diff * 0.15;
     video.currentTime = currentTimeRef.current;
 
@@ -68,7 +75,7 @@ export default function Hero() {
       rafRef.current = 0;
       const section = sectionRef.current;
       const video = videoRef.current;
-      if (!section || !video || !video.duration) return;
+      if (!section) return;
 
       const rect = section.getBoundingClientRect();
       const totalScroll = section.offsetHeight - window.innerHeight;
@@ -83,13 +90,13 @@ export default function Hero() {
         setHeroOpacity(newHeroOpacity);
       }
 
-      // Set interpolation target — the loop will smoothly approach it
-      targetTimeRef.current = progress * video.duration;
-
-      // Start interpolation loop if not already running
-      if (!interpolatingRef.current) {
-        interpolatingRef.current = true;
-        requestAnimationFrame(interpolate);
+      // Desktop only: scroll-driven video seeking
+      if (video && video.duration && window.innerWidth >= 768) {
+        targetTimeRef.current = progress * video.duration;
+        if (!interpolatingRef.current) {
+          interpolatingRef.current = true;
+          requestAnimationFrame(interpolate);
+        }
       }
 
       // Copy index
@@ -112,20 +119,20 @@ export default function Hero() {
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    if (video) {
+      const onLoaded = () => {
+        currentTimeRef.current = 0;
+        targetTimeRef.current = 0;
+      };
+      video.addEventListener("loadedmetadata", onLoaded);
+      return () => video.removeEventListener("loadedmetadata", onLoaded);
+    }
+  }, [isMobile]);
 
-    // Initialize currentTime tracker once metadata loads
-    const onLoaded = () => {
-      currentTimeRef.current = 0;
-      targetTimeRef.current = 0;
-    };
-
-    video.addEventListener("loadedmetadata", onLoaded);
+  useEffect(() => {
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
-
     return () => {
-      video.removeEventListener("loadedmetadata", onLoaded);
       window.removeEventListener("scroll", onScroll);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
@@ -140,59 +147,58 @@ export default function Hero() {
       {/* Sticky viewport */}
       <div className="sticky top-0 h-screen w-full overflow-hidden">
 
-        {/* ── VIDEO LAYER ── */}
-        {/* Desktop: full-bleed object-cover as before */}
-        <video
-          ref={videoRef}
-          muted
-          playsInline
-          preload="auto"
-          className="absolute inset-0 w-full h-full object-cover hidden md:block"
-        >
-          <source src="/Vizus Header 480p.mp4" type="video/mp4" />
-        </video>
-
-        {/* Mobile: cropped window — 50vh tall, pinned to vertical center,
-            object-cover + object-position to art-direct the crop so the
-            robot/branding stays the focal point instead of empty sky. */}
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[50vh] overflow-hidden rounded-2xl mx-3 md:hidden">
+        {/* ── VIDEO ── */}
+        {/* Desktop: scroll-driven, no autoplay */}
+        {!isMobile && (
           <video
-            ref={(el) => {
-              // On mobile this is the actual video; sync ref so scroll logic works.
-              // On desktop the other <video> is rendered instead (hidden on mobile).
-              if (el && window.innerWidth < 768) {
-                (videoRef as React.RefObject<HTMLVideoElement | null>).current = el;
-              }
-            }}
+            ref={videoRef}
             muted
             playsInline
             preload="auto"
-            className="absolute inset-0 w-full h-full object-cover object-[center_45%]"
+            className="absolute inset-0 w-full h-full object-cover"
           >
             <source src="/Vizus Header 480p.mp4" type="video/mp4" />
           </video>
+        )}
 
-          {/* Soft vignette inside the mobile window */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: `
-                linear-gradient(to bottom, #0B0F1A 0%, transparent 12%, transparent 82%, #0B0F1A 100%),
-                linear-gradient(to right, #0B0F1A 0%, transparent 10%, transparent 90%, #0B0F1A 100%)
-              `,
-            }}
-          />
-        </div>
+        {/* Mobile: autoplay loop — scroll-driven seeking doesn't work
+            on iOS Safari / mobile Chrome, so we just let it play.
+            Cropped window centered vertically with art-directed focus. */}
+        {isMobile && (
+          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[50vh] overflow-hidden rounded-2xl mx-3">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              className="absolute inset-0 w-full h-full object-cover object-[center_45%]"
+              // iOS Safari needs these as attributes too
+              {...{ "webkit-playsinline": "true" } as React.HTMLAttributes<HTMLVideoElement>}
+            >
+              <source src="/Vizus Header 480p.mp4" type="video/mp4" />
+            </video>
 
-        {/* ── GRADIENT MASKS ── */}
-        {/* Desktop radial vignette */}
+            {/* Vignette inside the mobile window */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: `
+                  linear-gradient(to bottom, #0B0F1A 0%, transparent 14%, transparent 80%, #0B0F1A 100%),
+                  linear-gradient(to right, #0B0F1A 0%, transparent 12%, transparent 88%, #0B0F1A 100%)
+                `,
+              }}
+            />
+          </div>
+        )}
+
+        {/* ── GRADIENT MASKS (desktop only — mobile has its own above) ── */}
         <div
           className="absolute inset-0 pointer-events-none hidden md:block"
           style={{
             background: `radial-gradient(ellipse 75% 65% at center, transparent 15%, rgba(11,15,26,0.35) 45%, rgba(11,15,26,0.8) 65%, #0B0F1A 88%)`,
           }}
         />
-        {/* Desktop edge bleed */}
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background to-transparent pointer-events-none hidden md:block" />
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent pointer-events-none hidden md:block" />
         <div className="absolute inset-y-0 left-0 w-28 bg-gradient-to-r from-background to-transparent pointer-events-none hidden md:block" />
@@ -265,8 +271,6 @@ export default function Hero() {
         </div>
 
         {/* ── SCROLL COPY CARDS ── */}
-        {/* On mobile: positioned in the lower half so the video window
-            shows behind the upper portion of the screen */}
         <div className="absolute inset-0 z-10 flex items-end md:items-center justify-center pointer-events-none px-4 md:px-6 pb-[12vh] md:pb-0">
           {SCROLL_COPY.map((item, i) => (
             <div
