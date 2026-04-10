@@ -165,27 +165,26 @@ export default function Hero() {
             on iOS Safari / mobile Chrome, so we just let it play.
             Cropped window centered vertically with art-directed focus. */}
         {isMobile && (
-          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[50vh] overflow-hidden rounded-2xl mx-3">
+          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[55vh] overflow-hidden rounded-3xl mx-0">
             <video
               autoPlay
               loop
               muted
               playsInline
               preload="auto"
-              className="absolute inset-0 w-full h-full object-cover object-[center_45%]"
-              // iOS Safari needs these as attributes too
+              className="absolute inset-0 w-full h-full object-cover object-[center_48%]"
               {...{ "webkit-playsinline": "true" } as React.HTMLAttributes<HTMLVideoElement>}
             >
               <source src="/Vizus Header 480p.mp4" type="video/mp4" />
             </video>
 
-            {/* Vignette inside the mobile window */}
+            {/* Vignette — heavier top fade to blend seamlessly */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
                 background: `
-                  linear-gradient(to bottom, #0B0F1A 0%, transparent 14%, transparent 80%, #0B0F1A 100%),
-                  linear-gradient(to right, #0B0F1A 0%, transparent 12%, transparent 88%, #0B0F1A 100%)
+                  linear-gradient(to bottom, #0B0F1A 0%, rgba(11,15,26,0.6) 10%, transparent 22%, transparent 75%, rgba(11,15,26,0.6) 88%, #0B0F1A 100%),
+                  linear-gradient(to right, #0B0F1A 0%, transparent 6%, transparent 94%, #0B0F1A 100%)
                 `,
               }}
             />
