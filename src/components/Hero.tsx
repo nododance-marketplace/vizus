@@ -31,8 +31,6 @@ export default function Hero() {
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const activeIndexRef = useRef(-1);
   const [isMobile, setIsMobile] = useState(false);
-  const currentTimeRef = useRef(0);
-  const targetTimeRef = useRef(0);
   const animFrameRef = useRef<number>(0);
 
   // Detect mobile once on mount (client-side only)
@@ -64,17 +62,7 @@ export default function Hero() {
       heroEl.style.pointerEvents = heroOpacity < 0.1 ? "none" : "auto";
     }
 
-    // Desktop: smooth video seeking with lerp
-    const video = videoRef.current;
-    if (video && video.duration && window.innerWidth >= 768) {
-      targetTimeRef.current = progress * video.duration;
-      const diff = targetTimeRef.current - currentTimeRef.current;
-      // Lerp factor 0.08 for buttery smoothness; skip tiny seeks
-      if (Math.abs(diff) > 0.01) {
-        currentTimeRef.current += diff * 0.08;
-        video.currentTime = currentTimeRef.current;
-      }
-    }
+    // Desktop: video plays automatically in background (no scroll-driven seeking)
 
     // Copy card index — direct DOM write
     const copyStart = 0.2;
@@ -103,17 +91,6 @@ export default function Hero() {
     }
   }, []);
 
-  useEffect(() => {
-    const video = videoRef.current;
-    if (video) {
-      const onLoaded = () => {
-        currentTimeRef.current = 0;
-        targetTimeRef.current = 0;
-      };
-      video.addEventListener("loadedmetadata", onLoaded);
-      return () => video.removeEventListener("loadedmetadata", onLoaded);
-    }
-  }, [isMobile]);
 
   // Start/stop the single animation loop
   useEffect(() => {
@@ -133,10 +110,12 @@ export default function Hero() {
       <div className="sticky top-0 h-screen w-full overflow-hidden">
 
         {/* ── VIDEO ── */}
-        {/* Desktop: scroll-driven, no autoplay */}
+        {/* Desktop: autoplay loop in background */}
         {!isMobile && (
           <video
             ref={videoRef}
+            autoPlay
+            loop
             muted
             playsInline
             preload="auto"
