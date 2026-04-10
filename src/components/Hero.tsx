@@ -183,7 +183,7 @@ export default function Hero() {
               className="absolute inset-0 pointer-events-none"
               style={{
                 background: `
-                  linear-gradient(to bottom, #0B0F1A 0%, rgba(11,15,26,0.6) 10%, transparent 22%, transparent 75%, rgba(11,15,26,0.6) 88%, #0B0F1A 100%),
+                  linear-gradient(to bottom, #0B0F1A 0%, rgba(11,15,26,0.8) 8%, rgba(11,15,26,0.4) 18%, transparent 30%, transparent 68%, rgba(11,15,26,0.4) 80%, rgba(11,15,26,0.8) 90%, #0B0F1A 100%),
                   linear-gradient(to right, #0B0F1A 0%, transparent 6%, transparent 94%, #0B0F1A 100%)
                 `,
               }}
