@@ -24,7 +24,9 @@ export default function CTA() {
           </p>
 
           <motion.a
-            href="#"
+            href="https://calendly.com/moisesjdelcastillo/30min"
+            target="_blank"
+            rel="noopener noreferrer"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.98 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}

@@ -33,7 +33,9 @@ export default function Navbar() {
           </a>
         </div>
         <a
-          href="#contact"
+          href="https://calendly.com/moisesjdelcastillo/30min"
+          target="_blank"
+          rel="noopener noreferrer"
           className="relative px-5 py-2.5 text-sm font-medium rounded-lg overflow-hidden group"
         >
           <span className="absolute inset-0 bg-gradient-to-r from-primary to-secondary-light rounded-lg" />

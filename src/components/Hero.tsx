@@ -214,7 +214,9 @@ export default function Hero() {
               className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center"
             >
               <a
-                href="#contact"
+                href="https://calendly.com/moisesjdelcastillo/30min"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="relative inline-flex items-center justify-center px-7 py-3.5 text-sm font-medium rounded-lg overflow-hidden group"
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-primary to-secondary-light" />
