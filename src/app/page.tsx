@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import PositioningStrip from "@/components/PositioningStrip";
 import Services from "@/components/Services";
+import WhyVizus from "@/components/WhyVizus";
 import Audience from "@/components/Audience";
 import Results from "@/components/Results";
 import Process from "@/components/Process";
@@ -16,6 +17,7 @@ export default function Home() {
         <Hero />
         <PositioningStrip />
         <Services />
+        <WhyVizus />
         <Audience />
         <Results />
         <Process />

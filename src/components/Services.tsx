@@ -7,6 +7,7 @@ import {
 } from "@phosphor-icons/react";
 import { StaggerContainer, StaggerItem } from "./AnimatedSection";
 import { FadeIn } from "./AnimatedSection";
+import VideoPanel from "./VideoPanel";
 
 const services = [
   {
@@ -51,19 +52,38 @@ export default function Services() {
   return (
     <section id="services" className="relative py-24 md:py-32">
       <div className="max-w-[1400px] mx-auto px-6 md:px-10">
-        <FadeIn>
-          <p className="text-sm text-accent font-mono tracking-wider uppercase mb-4">
-            What We Do
-          </p>
-          <h2 className="text-3xl md:text-5xl font-semibold tracking-tighter mb-4 max-w-[600px]">
-            We turn businesses into AI-powered systems.
-          </h2>
-          <p className="text-muted text-lg leading-relaxed max-w-[520px] mb-16">
-            Three pillars of infrastructure designed to increase your
-            output, reduce manual work, and drive measurable revenue.
-          </p>
-        </FadeIn>
+        {/* Header row — text left, video right */}
+        <div className="flex flex-col lg:flex-row items-start gap-12 lg:gap-20 mb-16">
+          <div className="flex-1">
+            <FadeIn>
+              <p className="text-sm text-accent font-mono tracking-wider uppercase mb-4">
+                What We Build
+              </p>
+              <h2 className="text-3xl md:text-5xl font-semibold tracking-tighter mb-4 max-w-[600px]">
+                We turn businesses into AI-powered systems.
+              </h2>
+              <p className="text-muted text-lg leading-relaxed max-w-[520px]">
+                Three pillars of infrastructure designed to increase your
+                output, reduce manual work, and drive measurable revenue.
+              </p>
+            </FadeIn>
+          </div>
 
+          {/* AI Architecture video */}
+          <FadeIn delay={0.15} className="w-full lg:w-[44%] shrink-0">
+            <VideoPanel
+              src="/AI Architecture.mp4"
+              className="w-full aspect-[16/10]"
+              objectFit="contain"
+              overlayOpacity={0.1}
+              glowColor="rgba(58, 102, 255, 0.1)"
+              glowIntensity="subtle"
+              borderRadius="1.25rem"
+            />
+          </FadeIn>
+        </div>
+
+        {/* Service cards grid */}
         <StaggerContainer className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {services.map((service) => (
             <StaggerItem key={service.title}>
@@ -73,7 +93,11 @@ export default function Services() {
 
                 <div className="relative">
                   <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-6">
-                    <service.icon size={24} weight="duotone" className="text-primary" />
+                    <service.icon
+                      size={24}
+                      weight="duotone"
+                      className="text-primary"
+                    />
                   </div>
 
                   <h3 className="text-xl font-semibold tracking-tight mb-3">

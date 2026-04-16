@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useRef, useState, useCallback } from "react";
+import VideoPanel from "./VideoPanel";
 
 const SCROLL_COPY = [
   {
@@ -26,14 +27,12 @@ const SCROLL_PAGES = SCROLL_COPY.length + 1;
 
 export default function Hero() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const activeIndexRef = useRef(-1);
-  const [isMobile, setIsMobile] = useState(false);
   const animFrameRef = useRef<number>(0);
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Detect mobile once on mount (client-side only)
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
@@ -41,7 +40,6 @@ export default function Hero() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Single RAF loop: interpolates video time + updates DOM directly (no React re-renders)
   const tick = useCallback(() => {
     animFrameRef.current = requestAnimationFrame(tick);
 
@@ -53,18 +51,15 @@ export default function Hero() {
     const scrolled = -rect.top;
     const progress = Math.max(0, Math.min(1, scrolled / totalScroll));
 
-    // Hero opacity — direct DOM write, no setState
     const heroFadeEnd = window.innerHeight * 0.6;
-    const heroOpacity = scrolled <= 0 ? 1 : Math.max(0, 1 - scrolled / heroFadeEnd);
+    const heroOpacity =
+      scrolled <= 0 ? 1 : Math.max(0, 1 - scrolled / heroFadeEnd);
     const heroEl = heroRef.current;
     if (heroEl) {
       heroEl.style.opacity = String(heroOpacity);
       heroEl.style.pointerEvents = heroOpacity < 0.1 ? "none" : "auto";
     }
 
-    // Desktop: video plays automatically in background (no scroll-driven seeking)
-
-    // Copy card index — direct DOM write
     const copyStart = 0.2;
     const copyEnd = 0.92;
     let newIdx = -1;
@@ -76,13 +71,12 @@ export default function Hero() {
       );
     }
     if (activeIndexRef.current !== newIdx) {
-      // Hide previous card
       const prev = activeIndexRef.current;
       if (prev >= 0 && cardRefs.current[prev]) {
         cardRefs.current[prev]!.style.opacity = "0";
-        cardRefs.current[prev]!.style.transform = "translateY(24px) scale(0.97)";
+        cardRefs.current[prev]!.style.transform =
+          "translateY(24px) scale(0.97)";
       }
-      // Show new card
       if (newIdx >= 0 && cardRefs.current[newIdx]) {
         cardRefs.current[newIdx]!.style.opacity = "1";
         cardRefs.current[newIdx]!.style.transform = "translateY(0) scale(1)";
@@ -91,8 +85,6 @@ export default function Hero() {
     }
   }, []);
 
-
-  // Start/stop the single animation loop
   useEffect(() => {
     animFrameRef.current = requestAnimationFrame(tick);
     return () => {
@@ -108,128 +100,138 @@ export default function Hero() {
     >
       {/* Sticky viewport */}
       <div className="sticky top-0 h-screen w-full overflow-hidden">
+        {/* Ambient background glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div
+            className="absolute top-[20%] right-[15%] w-[600px] h-[600px] rounded-full opacity-30"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(106, 0, 255, 0.12) 0%, rgba(59, 0, 185, 0.06) 40%, transparent 70%)",
+            }}
+          />
+          <div
+            className="absolute bottom-[10%] left-[10%] w-[500px] h-[500px] rounded-full opacity-20"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(58, 102, 255, 0.1) 0%, transparent 60%)",
+            }}
+          />
+        </div>
 
-        {/* ── VIDEO ── */}
-        {/* Desktop: autoplay loop in background */}
-        {!isMobile && (
-          <video
-            ref={videoRef}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            className="absolute inset-0 w-full h-full object-cover"
-          >
-            <source src="/Vizus Header 480p.mp4" type="video/mp4" />
-          </video>
-        )}
+        {/* Top/bottom edge gradients */}
+        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-background to-transparent pointer-events-none z-[5]" />
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none z-[5]" />
 
-        {/* Mobile: autoplay loop — scroll-driven seeking doesn't work
-            on iOS Safari / mobile Chrome, so we just let it play.
-            Cropped window centered vertically with art-directed focus. */}
-        {isMobile && (
-          <div className="absolute inset-x-0 top-[42%] -translate-y-1/2 h-[38vh] overflow-hidden rounded-3xl mx-0">
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-              className="absolute inset-0 w-full h-full object-contain object-center"
-              {...{ "webkit-playsinline": "true" } as React.HTMLAttributes<HTMLVideoElement>}
-            >
-              <source src="/Vizus Header 480p.mp4" type="video/mp4" />
-            </video>
-
-            {/* Vignette — heavier top/bottom fade to blend seamlessly */}
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                background: `
-                  linear-gradient(to bottom, #0B0F1A 0%, #0B0F1A 2%, rgba(11,15,26,0.85) 8%, rgba(11,15,26,0.5) 16%, rgba(11,15,26,0.15) 26%, transparent 38%, transparent 62%, rgba(11,15,26,0.15) 74%, rgba(11,15,26,0.5) 84%, rgba(11,15,26,0.85) 92%, #0B0F1A 98%, #0B0F1A 100%),
-                  linear-gradient(to right, #0B0F1A 0%, transparent 6%, transparent 94%, #0B0F1A 100%)
-                `,
-              }}
-            />
-          </div>
-        )}
-
-        {/* ── GRADIENT MASKS (desktop only — mobile has its own above) ── */}
-        <div
-          className="absolute inset-0 pointer-events-none hidden md:block"
-          style={{
-            background: `radial-gradient(ellipse 75% 65% at center, transparent 15%, rgba(11,15,26,0.35) 45%, rgba(11,15,26,0.8) 65%, #0B0F1A 88%)`,
-          }}
-        />
-        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background to-transparent pointer-events-none hidden md:block" />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent pointer-events-none hidden md:block" />
-        <div className="absolute inset-y-0 left-0 w-28 bg-gradient-to-r from-background to-transparent pointer-events-none hidden md:block" />
-        <div className="absolute inset-y-0 right-0 w-28 bg-gradient-to-l from-background to-transparent pointer-events-none hidden md:block" />
-
-        {/* ── HERO COPY ── */}
+        {/* ── HERO CONTENT — split layout ── */}
         <div
           ref={heroRef}
-          className="absolute inset-0 z-10 flex items-center justify-center will-change-[opacity]"
+          className="absolute inset-0 z-10 flex items-center will-change-[opacity]"
           style={{ opacity: 1 }}
         >
-          <div className="max-w-[900px] mx-auto px-6 md:px-10 text-center pt-0 md:pt-12">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-sm text-xs text-muted mb-6 md:mb-8"
-            >
-              <Image src="/vizus-icon.png" alt="" width={16} height={16} />
-              AI Systems Company
-            </motion.div>
+          <div className="w-full max-w-[1400px] mx-auto px-6 md:px-10">
+            <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16 lg:gap-20">
+              {/* Left — text */}
+              <div className="flex-1 text-center md:text-left pt-16 md:pt-0">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.6,
+                    delay: 0.2,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                  className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-sm text-xs text-muted mb-6 md:mb-8"
+                >
+                  <Image src="/vizus-icon.png" alt="" width={16} height={16} />
+                  AI Systems Company
+                </motion.div>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="text-3xl md:text-6xl lg:text-[4.25rem] font-semibold tracking-tighter leading-[1.05] mb-5 md:mb-6"
-            >
-              We Build AI Systems That Give Your Business a{" "}
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Performance Advantage
-              </span>
-            </motion.h1>
+                <motion.h1
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.7,
+                    delay: 0.3,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                  className="text-3xl md:text-5xl lg:text-[4.25rem] font-semibold tracking-tighter leading-[1.05] mb-5 md:mb-6"
+                >
+                  We Build AI Systems That Give Your Business a{" "}
+                  <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    Performance Advantage
+                  </span>
+                </motion.h1>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
-              className="text-sm md:text-lg text-muted leading-relaxed max-w-[600px] mx-auto mb-8 md:mb-10"
-            >
-              Vizus designs and deploys custom AI infrastructure, intelligent
-              systems, and scalable platforms for companies that want to move
-              faster and increase revenue.
-            </motion.p>
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.7,
+                    delay: 0.45,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                  className="text-sm md:text-lg text-muted leading-relaxed max-w-[520px] mx-auto md:mx-0 mb-8 md:mb-10"
+                >
+                  Vizus designs and deploys custom AI infrastructure, intelligent
+                  systems, and scalable platforms for companies that want to move
+                  faster and increase revenue.
+                </motion.p>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center"
-            >
-              <a
-                href="https://calendly.com/moisesjdelcastillo/30min"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="relative inline-flex items-center justify-center px-7 py-3.5 text-sm font-medium rounded-lg overflow-hidden group"
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.6,
+                    delay: 0.6,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                  className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center md:justify-start"
+                >
+                  <a
+                    href="https://calendly.com/moisesjdelcastillo/30min"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative inline-flex items-center justify-center px-7 py-3.5 text-sm font-medium rounded-lg overflow-hidden group"
+                  >
+                    <span className="absolute inset-0 bg-gradient-to-r from-primary to-secondary-light" />
+                    <span className="absolute inset-0 bg-gradient-to-r from-primary to-secondary-light opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500" />
+                    <span className="relative z-10">Book a Strategy Call</span>
+                  </a>
+                  <a
+                    href="#services"
+                    className="inline-flex items-center justify-center px-7 py-3.5 text-sm font-medium rounded-lg border border-white/10 text-muted hover:text-white hover:border-white/20 transition-all duration-300"
+                  >
+                    View Services
+                  </a>
+                </motion.div>
+              </div>
+
+              {/* Right — Vizus Bot video panel */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{
+                  duration: 0.9,
+                  delay: 0.5,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+                className="w-full md:w-[48%] lg:w-[45%] shrink-0"
               >
-                <span className="absolute inset-0 bg-gradient-to-r from-primary to-secondary-light" />
-                <span className="absolute inset-0 bg-gradient-to-r from-primary to-secondary-light opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500" />
-                <span className="relative z-10">Book a Strategy Call</span>
-              </a>
-              <a
-                href="#services"
-                className="inline-flex items-center justify-center px-7 py-3.5 text-sm font-medium rounded-lg border border-white/10 text-muted hover:text-white hover:border-white/20 transition-all duration-300"
-              >
-                View Services
-              </a>
-            </motion.div>
+                <VideoPanel
+                  src="/Vizus Bot.mp4"
+                  className={
+                    isMobile
+                      ? "w-full aspect-[16/10]"
+                      : "w-full aspect-[4/3]"
+                  }
+                  objectFit="contain"
+                  overlayOpacity={0.08}
+                  glowColor="rgba(106, 0, 255, 0.12)"
+                  glowIntensity="medium"
+                  borderRadius="1.5rem"
+                />
+              </motion.div>
+            </div>
           </div>
         </div>
 
@@ -238,7 +240,9 @@ export default function Hero() {
           {SCROLL_COPY.map((item, i) => (
             <div
               key={i}
-              ref={(el) => { cardRefs.current[i] = el; }}
+              ref={(el) => {
+                cardRefs.current[i] = el;
+              }}
               className="absolute flex items-center justify-center will-change-transform"
               style={{
                 opacity: 0,
