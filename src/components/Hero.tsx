@@ -5,31 +5,35 @@ import Image from "next/image";
 import { useEffect, useRef, useState, useCallback } from "react";
 import VideoPanel from "./VideoPanel";
 
-const SCROLL_COPY = [
+const SYSTEM_CARDS = [
   {
-    title: "Intelligent Infrastructure",
+    label: "01",
+    title: "AI Infrastructure",
     description:
-      "We architect AI systems that integrate seamlessly into your existing stack — not bolt-on tools, but core infrastructure that scales with your business.",
+      "Private compute, GPU-backed systems, and secure deployments purpose-built for your operations.",
   },
   {
-    title: "Custom-Built for You",
+    label: "02",
+    title: "Intelligent Systems",
     description:
-      "Every system we deploy is engineered around your data, your workflows, and your competitive landscape. No templates. No generic solutions.",
+      "Workflow automation, decision-support, and data pipelines that transform how your team operates.",
   },
   {
-    title: "Measurable Impact",
+    label: "03",
+    title: "AI Platforms",
     description:
-      "Our systems are designed to move the metrics that matter — revenue, efficiency, speed-to-market. We build for outcomes, not demos.",
+      "Scalable client-facing applications and custom platforms designed for growth and revenue.",
   },
 ];
 
-const SCROLL_PAGES = SCROLL_COPY.length + 1;
+const SCROLL_PAGES = 5;
 
 export default function Hero() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const activeIndexRef = useRef(-1);
+  const systemZoneRef = useRef<HTMLDivElement>(null);
+  const systemVideoRef = useRef<HTMLDivElement>(null);
+  const systemCardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const animFrameRef = useRef<number>(0);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -51,37 +55,58 @@ export default function Hero() {
     const scrolled = -rect.top;
     const progress = Math.max(0, Math.min(1, scrolled / totalScroll));
 
-    const heroFadeEnd = window.innerHeight * 0.6;
-    const heroOpacity =
-      scrolled <= 0 ? 1 : Math.max(0, 1 - scrolled / heroFadeEnd);
+    // ── Phase 1: Hero fade-out (progress 0 → 0.18) ──
+    const heroFadeEnd = 0.18;
+    const heroOpacity = progress <= 0 ? 1 : Math.max(0, 1 - progress / heroFadeEnd);
     const heroEl = heroRef.current;
     if (heroEl) {
       heroEl.style.opacity = String(heroOpacity);
       heroEl.style.pointerEvents = heroOpacity < 0.1 ? "none" : "auto";
     }
 
-    const copyStart = 0.2;
-    const copyEnd = 0.92;
-    let newIdx = -1;
-    if (progress >= copyStart && progress <= copyEnd) {
-      const copyProgress = (progress - copyStart) / (copyEnd - copyStart);
-      newIdx = Math.min(
-        SCROLL_COPY.length - 1,
-        Math.floor(copyProgress * SCROLL_COPY.length)
-      );
+    // ── Phase 2: System zone fade-in (progress 0.12 → 0.28) ──
+    const zoneEl = systemZoneRef.current;
+    if (zoneEl) {
+      const zoneFadeStart = 0.12;
+      const zoneFadeEnd = 0.28;
+      const zoneFadeOutStart = 0.88;
+      let zoneOpacity = 0;
+      if (progress >= zoneFadeStart && progress <= zoneFadeEnd) {
+        zoneOpacity = (progress - zoneFadeStart) / (zoneFadeEnd - zoneFadeStart);
+      } else if (progress > zoneFadeEnd && progress < zoneFadeOutStart) {
+        zoneOpacity = 1;
+      } else if (progress >= zoneFadeOutStart) {
+        zoneOpacity = Math.max(0, 1 - (progress - zoneFadeOutStart) / (1 - zoneFadeOutStart));
+      }
+      zoneEl.style.opacity = String(zoneOpacity);
+      zoneEl.style.pointerEvents = zoneOpacity < 0.1 ? "none" : "auto";
     }
-    if (activeIndexRef.current !== newIdx) {
-      const prev = activeIndexRef.current;
-      if (prev >= 0 && cardRefs.current[prev]) {
-        cardRefs.current[prev]!.style.opacity = "0";
-        cardRefs.current[prev]!.style.transform =
-          "translateY(24px) scale(0.97)";
-      }
-      if (newIdx >= 0 && cardRefs.current[newIdx]) {
-        cardRefs.current[newIdx]!.style.opacity = "1";
-        cardRefs.current[newIdx]!.style.transform = "translateY(0) scale(1)";
-      }
-      activeIndexRef.current = newIdx;
+
+    // ── Phase 2b: Video panel scale-in (progress 0.14 → 0.30) ──
+    const videoEl = systemVideoRef.current;
+    if (videoEl) {
+      const vidStart = 0.14;
+      const vidEnd = 0.30;
+      const vidProgress = Math.max(0, Math.min(1, (progress - vidStart) / (vidEnd - vidStart)));
+      const scale = 0.92 + vidProgress * 0.08;
+      const translateY = (1 - vidProgress) * 30;
+      videoEl.style.transform = `translateY(${translateY}px) scale(${scale})`;
+      videoEl.style.opacity = String(vidProgress);
+    }
+
+    // ── Phase 3: Cards emerge progressively (progress 0.32 → 0.72) ──
+    const cardStart = 0.32;
+    const cardSpacing = 0.13;
+    for (let i = 0; i < SYSTEM_CARDS.length; i++) {
+      const card = systemCardRefs.current[i];
+      if (!card) continue;
+      const thisStart = cardStart + i * cardSpacing;
+      const thisEnd = thisStart + 0.12;
+      const cardProgress = Math.max(0, Math.min(1, (progress - thisStart) / (thisEnd - thisStart)));
+      const translateY = (1 - cardProgress) * 28;
+      const scale = 0.95 + cardProgress * 0.05;
+      card.style.opacity = String(cardProgress);
+      card.style.transform = `translateY(${translateY}px) scale(${scale})`;
     }
   }, []);
 
@@ -235,31 +260,81 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* ── SCROLL COPY CARDS ── */}
-        <div className="absolute inset-0 z-10 flex items-end md:items-center justify-center pointer-events-none px-4 md:px-6 pb-[18vh] md:pb-0">
-          {SCROLL_COPY.map((item, i) => (
+        {/* ── SYSTEM TRANSITION ZONE ── */}
+        <div
+          ref={systemZoneRef}
+          className="absolute inset-0 z-10 flex items-center justify-center will-change-[opacity]"
+          style={{ opacity: 0, pointerEvents: "none" }}
+        >
+          <div className="w-full max-w-[1200px] mx-auto px-4 md:px-10">
+            {/* Section label */}
+            <p className="text-[11px] md:text-xs text-accent/70 font-mono tracking-[0.2em] uppercase text-center mb-6 md:mb-8">
+              Systems Architecture
+            </p>
+
+            {/* Vizus Header video — cinematic panel */}
             <div
-              key={i}
-              ref={(el) => {
-                cardRefs.current[i] = el;
-              }}
-              className="absolute flex items-center justify-center will-change-transform"
+              ref={systemVideoRef}
+              className="will-change-transform mx-auto"
               style={{
                 opacity: 0,
-                transform: "translateY(24px) scale(0.97)",
-                transition: "opacity 0.5s ease-out, transform 0.5s ease-out",
+                transform: "translateY(30px) scale(0.92)",
               }}
             >
-              <div className="max-w-[640px] w-[calc(100vw-2rem)] md:w-auto rounded-2xl border border-white/[0.08] bg-background/85 md:bg-background/70 backdrop-blur-2xl px-6 py-7 md:px-14 md:py-12 text-center shadow-2xl shadow-black/50">
-                <h2 className="text-xl md:text-5xl font-semibold tracking-tighter leading-[1.1] mb-2 md:mb-4 text-white">
-                  {item.title}
-                </h2>
-                <p className="text-xs md:text-lg text-muted leading-relaxed">
-                  {item.description}
-                </p>
-              </div>
+              <VideoPanel
+                src="/Vizus Header 480p.mp4"
+                className={
+                  isMobile
+                    ? "w-full aspect-[16/9]"
+                    : "w-[85%] mx-auto aspect-[2.2/1]"
+                }
+                objectFit="cover"
+                overlayOpacity={0.12}
+                glowColor="rgba(106, 0, 255, 0.08)"
+                glowIntensity="subtle"
+                borderRadius={isMobile ? "1rem" : "1.25rem"}
+              />
             </div>
-          ))}
+
+            {/* Capability cards — emerge below the video */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-6 md:mt-8">
+              {SYSTEM_CARDS.map((card, i) => (
+                <div
+                  key={i}
+                  ref={(el) => {
+                    systemCardRefs.current[i] = el;
+                  }}
+                  className="will-change-transform"
+                  style={{
+                    opacity: 0,
+                    transform: "translateY(28px) scale(0.95)",
+                  }}
+                >
+                  <div className="relative rounded-xl border border-white/[0.06] bg-surface/40 backdrop-blur-sm p-5 md:p-6 h-full">
+                    {/* Subtle top accent line */}
+                    <div
+                      className="absolute top-0 left-6 right-6 h-px"
+                      style={{
+                        background:
+                          "linear-gradient(to right, transparent, rgba(106, 0, 255, 0.2), rgba(111, 211, 255, 0.15), transparent)",
+                      }}
+                    />
+                    <div className="flex items-baseline gap-3 mb-2.5">
+                      <span className="text-[10px] font-mono text-primary/50 tracking-wider">
+                        {card.label}
+                      </span>
+                      <h3 className="text-sm md:text-base font-semibold tracking-tight text-white">
+                        {card.title}
+                      </h3>
+                    </div>
+                    <p className="text-xs md:text-sm text-muted/70 leading-relaxed">
+                      {card.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>
