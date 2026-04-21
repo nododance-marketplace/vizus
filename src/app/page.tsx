@@ -23,7 +23,7 @@ export default function Home() {
         <Process />
         <CTA />
       </main>
-      <Footer />
+      <Footer showLaunchLink />
     </>
   );
 }

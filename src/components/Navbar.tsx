@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Navbar() {
   return (
@@ -12,7 +13,7 @@ export default function Navbar() {
       className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-background/70 border-b border-white/5"
     >
       <div className="max-w-[1400px] mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
-        <a href="#" className="flex items-center gap-2.5">
+        <Link href="/" className="flex items-center gap-2.5">
           <Image
             src="/vizus-icon.png"
             alt="Vizus"
@@ -20,17 +21,17 @@ export default function Navbar() {
             height={32}
           />
           <span className="text-lg font-semibold tracking-tight">Vizus</span>
-        </a>
+        </Link>
         <div className="hidden md:flex items-center gap-8 text-sm text-muted">
-          <a href="#services" className="hover:text-white transition-colors duration-300">
+          <Link href="/#services" className="hover:text-white transition-colors duration-300">
             Services
-          </a>
-          <a href="#process" className="hover:text-white transition-colors duration-300">
-            Process
-          </a>
-          <a href="#contact" className="hover:text-white transition-colors duration-300">
-            Contact
-          </a>
+          </Link>
+          <Link href="/launch" className="hover:text-white transition-colors duration-300">
+            24hr Quick Launch
+          </Link>
+          <Link href="/work" className="hover:text-white transition-colors duration-300">
+            Work
+          </Link>
         </div>
         <a
           href="https://calendly.com/moisesjdelcastillo/30min"
