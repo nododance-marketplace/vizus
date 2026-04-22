@@ -1,37 +1,41 @@
 "use client";
 
-import { ArrowUpRight, Browsers } from "@phosphor-icons/react";
+import { ArrowUpRight } from "@phosphor-icons/react";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/AnimatedSection";
+import LazyVideo from "@/components/LazyVideo";
 
-// PLACEHOLDER — Replace image, client name, industry, description, and liveUrl per project
 const websites = [
   {
-    image: "",
-    clientName: "Client Name",
-    industry: "Industry",
-    description: "One-line description of what this landing page accomplished.",
-    liveUrl: "https://example.com",
+    videoSrc: "/work/websites/3dmates.mp4",
+    clientName: "3DMates",
+    industry: "Manufacturing",
+    description:
+      "A distributed manufacturing marketplace that connects people who need 3D prints, scans, or designs with local printer owners in the Charlotte area.",
+    liveUrl: "https://www.3dmates.tech/",
   },
   {
-    image: "",
-    clientName: "Client Name",
-    industry: "Industry",
-    description: "One-line description of what this landing page accomplished.",
-    liveUrl: "https://example.com",
+    videoSrc: "/work/websites/nodo-dance.mp4",
+    clientName: "Nodo Dance",
+    industry: "Marketplace",
+    description:
+      "A centralized discovery and booking marketplace for partner dance — connecting dancers, instructors, and events in one place. Eventbrite + Meetup for the dance world.",
+    liveUrl: "https://nododance.com/",
   },
   {
-    image: "",
-    clientName: "Client Name",
-    industry: "Industry",
-    description: "One-line description of what this landing page accomplished.",
-    liveUrl: "https://example.com",
+    videoSrc: "/work/websites/jovee.mp4",
+    clientName: "Jovée Link",
+    industry: "Beauty",
+    description:
+      "An app that connects nail clients with local nail artists — find, compare, and book the perfect artist near you in seconds. No DMs, no walk-ins, no guessing.",
+    liveUrl: "https://testjovee.vercel.app/",
   },
   {
-    image: "",
-    clientName: "Client Name",
-    industry: "Industry",
-    description: "One-line description of what this landing page accomplished.",
-    liveUrl: "https://example.com",
+    videoSrc: "/work/websites/maloo.mp4",
+    clientName: "Maloo",
+    industry: "AI Voice",
+    description:
+      "An AI voice agent that answers calls, takes reservations, and handles orders for restaurants — 24/7.",
+    liveUrl: "https://maloo-six.vercel.app/",
   },
 ];
 
@@ -60,7 +64,7 @@ export default function WorkWebsites() {
                 {/* Hover gradient */}
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-primary/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-                {/* PLACEHOLDER — Screenshot preview */}
+                {/* Website preview — looping screen recording */}
                 <div
                   className="relative aspect-[16/10] overflow-hidden border-b border-white/[0.06]"
                   style={{
@@ -68,33 +72,14 @@ export default function WorkWebsites() {
                       "linear-gradient(135deg, #0B0F1A 0%, #111827 40%, #1a2332 100%)",
                   }}
                 >
-                  {site.image ? (
-                    // Real screenshots swapped in here — replace placeholder block with <img>
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={site.image}
-                      alt={site.clientName}
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-[800ms] group-hover:scale-[1.03]"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="flex flex-col items-center gap-3 text-muted/40">
-                        <div className="w-14 h-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                          <Browsers
-                            size={24}
-                            weight="duotone"
-                            className="text-primary/60"
-                          />
-                        </div>
-                        <span className="text-[11px] font-mono tracking-wider uppercase">
-                          Screenshot placeholder
-                        </span>
-                      </div>
-                    </div>
-                  )}
+                  <LazyVideo
+                    src={site.videoSrc}
+                    objectFit="cover"
+                    className="absolute inset-0 transition-transform duration-[800ms] group-hover:scale-[1.03]"
+                  />
                   {/* Edge vignette — matches VideoPanel treatment */}
                   <div
-                    className="absolute inset-0 pointer-events-none"
+                    className="absolute inset-0 pointer-events-none z-[2]"
                     style={{
                       background:
                         "linear-gradient(to top, rgba(11, 15, 26, 0.35) 0%, transparent 25%)",

@@ -1,33 +1,36 @@
 "use client";
 
-import { FilmStrip } from "@phosphor-icons/react";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/AnimatedSection";
+import LazyVideo from "@/components/LazyVideo";
 
-// PLACEHOLDER — Replace videoSrc (MP4 URL), client name, description, and platforms per project
 const videos = [
   {
-    videoSrc: "",
-    clientName: "Client Name",
-    description: "Short description of the campaign goal and what it achieved.",
+    videoSrc: "/work/videos/3dmates-commercial.mp4",
+    clientName: "3DMates",
+    description:
+      "Explainer video demonstrating the utility of the 3DMates marketplace.",
+    platforms: ["Instagram", "TikTok", "YouTube"],
+  },
+  {
+    videoSrc: "/work/videos/lasting-impressions.mp4",
+    clientName: "Lasting Impressions",
+    description:
+      "A Charlotte-based luxury detailing company wanted a unique video of a Porsche driving through the city to their auto shop.",
     platforms: ["Instagram", "TikTok"],
   },
   {
-    videoSrc: "",
-    clientName: "Client Name",
-    description: "Short description of the campaign goal and what it achieved.",
-    platforms: ["YouTube", "Instagram"],
+    videoSrc: "/work/videos/gridwell.mp4",
+    clientName: "Gridwell",
+    description:
+      "A startup that finds the best deal for power generators near you. Campaign video introducing the product.",
+    platforms: ["Instagram", "TikTok", "YouTube"],
   },
   {
-    videoSrc: "",
-    clientName: "Client Name",
-    description: "Short description of the campaign goal and what it achieved.",
-    platforms: ["TikTok", "Reels"],
-  },
-  {
-    videoSrc: "",
-    clientName: "Client Name",
-    description: "Short description of the campaign goal and what it achieved.",
-    platforms: ["Instagram", "YouTube", "TikTok"],
+    videoSrc: "/work/videos/chyra.mp4",
+    clientName: "Chyra",
+    description:
+      "A Raleigh-based audio engineering company wanted a video to show customers what they do.",
+    platforms: ["Instagram", "YouTube"],
   },
 ];
 
@@ -48,7 +51,7 @@ export default function WorkVideos() {
           {videos.map((video, i) => (
             <StaggerItem key={i}>
               <div className="group relative rounded-2xl border border-white/[0.06] hover:border-primary/20 bg-surface/40 overflow-hidden h-full transition-colors duration-500">
-                {/* PLACEHOLDER — Vertical video format (9:16) */}
+                {/* Vertical video (9:16) */}
                 <div
                   className="relative aspect-[9/16] overflow-hidden"
                   style={{
@@ -57,7 +60,7 @@ export default function WorkVideos() {
                       "0 0 40px 2px rgba(106, 0, 255, 0.08), 0 0 80px 16px rgba(106, 0, 255, 0.08)",
                   }}
                 >
-                  {/* Dark fallback */}
+                  {/* Dark fallback while loading */}
                   <div
                     className="absolute inset-0"
                     style={{
@@ -66,36 +69,15 @@ export default function WorkVideos() {
                     }}
                   />
 
-                  {video.videoSrc ? (
-                    <video
-                      src={video.videoSrc}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      preload="metadata"
-                      className="relative w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="flex flex-col items-center gap-3 text-muted/40">
-                        <div className="w-14 h-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                          <FilmStrip
-                            size={24}
-                            weight="duotone"
-                            className="text-primary/60"
-                          />
-                        </div>
-                        <span className="text-[11px] font-mono tracking-wider uppercase">
-                          Video placeholder
-                        </span>
-                      </div>
-                    </div>
-                  )}
+                  <LazyVideo
+                    src={video.videoSrc}
+                    objectFit="cover"
+                    className="absolute inset-0"
+                  />
 
                   {/* Edge fade — matches VideoPanel treatment */}
                   <div
-                    className="absolute inset-0 pointer-events-none"
+                    className="absolute inset-0 pointer-events-none z-[2]"
                     style={{
                       background: `
                         linear-gradient(to top, rgba(11, 15, 26, 0.5) 0%, transparent 20%),
@@ -105,7 +87,7 @@ export default function WorkVideos() {
                   />
                   {/* Inner border */}
                   <div
-                    className="absolute inset-0 pointer-events-none"
+                    className="absolute inset-0 pointer-events-none z-[3]"
                     style={{
                       border: "1px solid rgba(255, 255, 255, 0.06)",
                       borderRadius: "1rem 1rem 0 0",
