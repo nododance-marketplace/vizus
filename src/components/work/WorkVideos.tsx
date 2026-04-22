@@ -71,6 +71,7 @@ export default function WorkVideos() {
 
                   <LazyVideo
                     src={video.videoSrc}
+                    poster={video.videoSrc.replace(/\.mp4$/, ".jpg")}
                     objectFit="cover"
                     className="absolute inset-0"
                   />

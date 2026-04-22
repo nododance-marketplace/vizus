@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 
 interface LazyVideoProps {
   src: string;
+  /** Poster image shown before the video loads — prevents the "blank panel" flash. */
+  poster?: string;
   className?: string;
   objectFit?: "cover" | "contain";
   /** Start loading when the video is within this many pixels of the viewport. */
@@ -16,6 +18,7 @@ interface LazyVideoProps {
  */
 export default function LazyVideo({
   src,
+  poster,
   className = "",
   objectFit = "cover",
   rootMargin = "200px",
@@ -47,6 +50,7 @@ export default function LazyVideo({
     <video
       ref={videoRef}
       src={shouldLoad ? src : undefined}
+      poster={poster}
       loop
       muted
       playsInline

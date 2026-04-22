@@ -74,6 +74,7 @@ export default function WorkWebsites() {
                 >
                   <LazyVideo
                     src={site.videoSrc}
+                    poster={site.videoSrc.replace(/\.mp4$/, ".jpg")}
                     objectFit="cover"
                     className="absolute inset-0 transition-transform duration-[800ms] group-hover:scale-[1.03]"
                   />
