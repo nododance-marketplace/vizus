@@ -8,7 +8,6 @@ import { List, X } from "@phosphor-icons/react";
 
 const NAV_LINKS = [
   { href: "/#services", label: "Services" },
-  { href: "/launch", label: "24hr Quick Launch" },
   { href: "/work", label: "Work" },
 ];
 

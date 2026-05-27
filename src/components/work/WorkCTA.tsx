@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Link from "next/link";
 import { FadeIn } from "@/components/AnimatedSection";
 
 export default function WorkCTA() {
@@ -20,35 +19,24 @@ export default function WorkCTA() {
             Want Something Like This?
           </h2>
           <p className="text-muted text-lg leading-relaxed mb-10 max-w-[520px] mx-auto">
-            Pick a productized package to launch fast, or book a call to scope
-            a custom engagement.
+            Book a strategy call to scope your project and discuss how we can
+            build it together.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
-            <motion.div
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            >
-              <Link
-                href="/launch"
-                className="relative inline-flex items-center justify-center px-8 py-4 text-base font-medium rounded-xl overflow-hidden group"
-              >
-                <span className="absolute inset-0 bg-gradient-to-r from-primary to-secondary-light" />
-                <span className="absolute inset-0 bg-gradient-to-r from-primary to-secondary-light opacity-0 group-hover:opacity-80 blur-2xl transition-opacity duration-500" />
-                <span className="absolute inset-[1px] bg-gradient-to-r from-primary to-secondary-light rounded-[11px]" />
-                <span className="relative z-10">Explore Launch Services</span>
-              </Link>
-            </motion.div>
-            <a
-              href="https://calendly.com/moisesjdelcastillo/30min"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-8 py-4 text-base font-medium rounded-xl border border-white/10 text-muted hover:text-white hover:border-white/20 transition-all duration-300"
-            >
-              Book a Call
-            </a>
-          </div>
+          <motion.a
+            href="https://calendly.com/moisesjdelcastillo/30min"
+            target="_blank"
+            rel="noopener noreferrer"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            className="relative inline-flex items-center justify-center px-8 py-4 text-base font-medium rounded-xl overflow-hidden group"
+          >
+            <span className="absolute inset-0 bg-gradient-to-r from-primary to-secondary-light" />
+            <span className="absolute inset-0 bg-gradient-to-r from-primary to-secondary-light opacity-0 group-hover:opacity-80 blur-2xl transition-opacity duration-500" />
+            <span className="absolute inset-[1px] bg-gradient-to-r from-primary to-secondary-light rounded-[11px]" />
+            <span className="relative z-10">Book a Strategy Call</span>
+          </motion.a>
         </FadeIn>
       </div>
     </section>
